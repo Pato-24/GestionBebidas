@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Bebidas - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-wine-bottle"></i>
+                <h2>Gestión Bebidas</h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#productos" class="nav-item" data-section="productos">
+                    <i class="fas fa-box"></i>
+                    <span>Productos</span>
+                </a>
+                <a href="#ventas" class="nav-item" data-section="ventas">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Ventas</span>
+                </a>
+                <a href="#inventario" class="nav-item" data-section="inventario">
+                    <i class="fas fa-warehouse"></i>
+                    <span>Inventario</span>
+                </a>
+                <a href="#reportes" class="nav-item" data-section="reportes">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Reportes</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p><i class="fas fa-graduation-cap"></i> TP Integrador</p>
+                <p class="small">UTN - 2do Año</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p class="breadcrumb" id="breadcrumb">Inicio / Dashboard</p>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar..." id="global-search">
+                    </div>
+                    <button class="btn-icon" title="Notificaciones">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <div class="user-info">
+                        <span>Usuario</span>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content">
+                <!-- Dashboard Section -->
+                <section id="section-dashboard" class="content-section active">
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon blue">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <p class="kpi-label">Ventas Totales</p>
+                                <h3 class="kpi-value" id="kpi-ventas-total">$0</h3>
+                                <span class="kpi-change positive">
+                                    <i class="fas fa-arrow-up"></i> Mes actual
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon green">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <p class="kpi-label">Total Productos</p>
+                                <h3 class="kpi-value" id="kpi-productos">0</h3>
+                                <span class="kpi-change">
+                                    <i class="fas fa-boxes"></i> En catálogo
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon orange">
+                                <i class="fas fa-warehouse"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <p class="kpi-label">Unidades en Stock</p>
+                                <h3 class="kpi-value" id="kpi-stock">0</h3>
+                                <span class="kpi-change negative">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <span id="kpi-stock-bajo">0</span> bajo mínimo
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon purple">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <p class="kpi-label">Ventas del Mes</p>
+                                <h3 class="kpi-value" id="kpi-ventas-mes">$0</h3>
+                                <span class="kpi-change positive">
+                                    <i class="fas fa-calendar-alt"></i> 
+                                    <span id="kpi-ventas-mes-count">0</span> transacciones
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 1 -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-chart-bar"></i> Ventas Mensuales</h3>
+                                <div class="card-actions">
+                                    <button class="btn-icon-small" title="Actualizar">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="chartVentasMensuales"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-chart-pie"></i> Ventas por Categoría</h3>
+                                <div class="card-actions">
+                                    <button class="btn-icon-small" title="Actualizar">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="chartVentasCategoria"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-trophy"></i> Top 10 Productos Más Vendidos</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="chartTopProductos"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-credit-card"></i> Métodos de Pago</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="chartMetodosPago"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alertas -->
+                    <div class="alert-section">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Alertas de Stock Bajo</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="alertas-stock" class="table-responsive">
+                                    <p class="loading">Cargando alertas...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Productos Section -->
+                <section id="section-productos" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <input type="text" class="search-input" placeholder="Buscar producto..." id="search-productos">
+                            <select class="filter-select" id="filter-categoria">
+                                <option value="">Todas las categorías</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-primary" id="btn-nuevo-producto">
+                                <i class="fas fa-plus"></i> Nuevo Producto
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="tabla-productos" class="table-responsive">
+                                <p class="loading">Cargando productos...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Ventas Section -->
+                <section id="section-ventas" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <input type="date" class="date-input" id="filter-fecha-desde">
+                            <input type="date" class="date-input" id="filter-fecha-hasta">
+                            <select class="filter-select" id="filter-metodo-pago">
+                                <option value="">Todos los métodos</option>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Mixto">Mixto</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-primary" id="btn-nueva-venta">
+                                <i class="fas fa-plus"></i> Nueva Venta
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="tabla-ventas" class="table-responsive">
+                                <p class="loading">Cargando ventas...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Inventario Section -->
+                <section id="section-inventario" class="content-section">
+                    <div class="section-toolbar">
+                        <div class="toolbar-left">
+                            <input type="text" class="search-input" placeholder="Buscar en inventario..." id="search-inventario">
+                            <select class="filter-select" id="filter-estado-stock">
+                                <option value="">Todos los estados</option>
+                                <option value="Bajo">Stock Bajo</option>
+                                <option value="Medio">Stock Medio</option>
+                                <option value="Suficiente">Stock Suficiente</option>
+                            </select>
+                        </div>
+                        <div class="toolbar-right">
+                            <button class="btn btn-secondary" id="btn-exportar-inventario">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="tabla-inventario" class="table-responsive">
+                                <p class="loading">Cargando inventario...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reportes Section -->
+                <section id="section-reportes" class="content-section">
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div class="report-icon">
+                                <i class="fas fa-file-pdf"></i>
+                            </div>
+                            <h3>Reporte de Ventas</h3>
+                            <p>Generar reporte detallado de ventas por período</p>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-download"></i> Descargar PDF
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-icon">
+                                <i class="fas fa-file-excel"></i>
+                            </div>
+                            <h3>Inventario Completo</h3>
+                            <p>Exportar listado completo de stock actual</p>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-download"></i> Descargar Excel
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3>Análisis Estadístico</h3>
+                            <p>Visualizar tendencias y patrones de venta</p>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-eye"></i> Ver Análisis
+                            </button>
+                        </div>
+
+                        <div class="report-card">
+                            <div class="report-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Top Clientes</h3>
+                            <p>Ranking de clientes por volumen de compra</p>
+                            <button class="btn btn-outline">
+                                <i class="fas fa-download"></i> Generar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Análisis de interpretación -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h3><i class="fas fa-lightbulb"></i> Interpretación y Análisis de Datos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="analysis-content">
+                                <h4>Conclusiones del Análisis</h4>
+                                <div class="analysis-item">
+                                    <i class="fas fa-chart-line"></i>
+                                    <div>
+                                        <h5>Tendencias de Ventas</h5>
+                                        <p>Se observa un incremento sostenido en las ventas durante los últimos 3 meses, 
+                                        con picos significativos en fines de semana. Las categorías de "Cervezas" y "Gaseosas" 
+                                        representan el 65% del total de ingresos.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="analysis-item">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <div>
+                                        <h5>Gestión de Inventario</h5>
+                                        <p>Se detectaron productos con rotación baja que ocupan espacio en inventario. 
+                                        Se recomienda implementar promociones para productos de la categoría "Licores" 
+                                        y ajustar los niveles de stock mínimo.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="analysis-item">
+                                    <i class="fas fa-trophy"></i>
+                                    <div>
+                                        <h5>Productos Estrella</h5>
+                                        <p>Los productos de menor volumen (350ml) tienen mayor rotación que presentaciones grandes. 
+                                        Esto sugiere que los clientes prefieren compras de conveniencia. 
+                                        Se recomienda ampliar el stock de estas presentaciones.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="analysis-item">
+                                    <i class="fas fa-credit-card"></i>
+                                    <div>
+                                        <h5>Métodos de Pago</h5>
+                                        <p>El 70% de las transacciones se realizan en efectivo, seguido por tarjeta (25%). 
+                                        La incorporación de pagos digitales (QR, transferencias) podría mejorar la experiencia 
+                                        del cliente y agilizar el proceso de venta.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Nueva Venta -->
+    <div id="modal-nueva-venta" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-shopping-cart"></i> Registrar Nueva Venta</h2>
+                <button class="btn-close" onclick="cerrarModal('modal-nueva-venta')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nueva-venta">
+                    <div class="form-group">
+                        <label>Método de Pago</label>
+                        <select name="payment_method" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Mixto">Mixto</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Nota (opcional)</label>
+                        <textarea name="note" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="productos-venta">
+                        <h4>Productos</h4>
+                        <div id="items-venta"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="agregarItemVenta()">
+                            <i class="fas fa-plus"></i> Agregar Producto
+                        </button>
+                    </div>
+                    
+                    <div class="total-venta">
+                        <h3>Total: $<span id="total-venta-display">0.00</span></h3>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-nueva-venta')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Registrar Venta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal Nuevo Producto -->
+        <div class="modal" id="modal-nuevo-producto">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><i class="fas fa-box"></i> Nuevo Producto</h2>
+                    <button class="modal-close" onclick="cerrarModal('modal-nuevo-producto')">&times;</button>
+                </div>
+                <form id="form-nuevo-producto">
+                    <div class="form-group">
+                        <label>Nombre del Producto *</label>
+                        <input type="text" name="nombre" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Categoría *</label>
+                        <select name="categoria_id" id="select-categoria-producto" required>
+                            <option value="">Seleccione una categoría</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Precio *</label>
+                        <input type="number" name="precio" step="0.01" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Stock Inicial *</label>
+                        <input type="number" name="stock" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Stock Mínimo *</label>
+                        <input type="number" name="stock_minimo" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea name="descripcion" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-nuevo-producto')">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/tables.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

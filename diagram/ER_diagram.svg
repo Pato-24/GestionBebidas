@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="700" viewBox="0 0 1100 700">
+  <style>
+    .table { fill:#ffffff; stroke:#2b6cb0; stroke-width:2 }
+    .title { font: bold 14px sans-serif; fill:#0b3d91 }
+    .col { font: 12px monospace; fill:#222 }
+    .fk { fill:#a03 }
+    .line { stroke:#444; stroke-width:2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#444" />
+    </marker>
+  </defs>
+
+  <!-- categories -->
+  <g transform="translate(30,30)">
+    <rect class="table" x="0" y="0" width="220" height="70" rx="6"/>
+    <text class="title" x="10" y="20">categories</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">name, description</text>
+  </g>
+
+  <!-- suppliers -->
+  <g transform="translate(300,30)">
+    <rect class="table" x="0" y="0" width="300" height="100" rx="6"/>
+    <text class="title" x="10" y="20">suppliers</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">name, contact, phone, email, address</text>
+  </g>
+
+  <!-- products -->
+  <g transform="translate(30,150)">
+    <rect class="table" x="0" y="0" width="420" height="140" rx="6"/>
+    <text class="title" x="10" y="20">products</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">sku, name</text>
+    <text class="col" x="12" y="72">category_id FK -> categories.id</text>
+    <text class="col" x="12" y="88">supplier_id FK -> suppliers.id</text>
+    <text class="col" x="12" y="104">volume_ml, unit_price, created_at</text>
+  </g>
+
+  <!-- inventories -->
+  <g transform="translate(480,150)">
+    <rect class="table" x="0" y="0" width="240" height="90" rx="6"/>
+    <text class="title" x="10" y="20">inventories</text>
+    <text class="col" x="12" y="40">product_id PK/FK -> products.id</text>
+    <text class="col" x="12" y="56">quantity, min_stock, last_updated</text>
+  </g>
+
+  <!-- customers -->
+  <g transform="translate(30,320)">
+    <rect class="table" x="0" y="0" width="300" height="90" rx="6"/>
+    <text class="title" x="10" y="20">customers</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">name, email, phone</text>
+  </g>
+
+  <!-- sales -->
+  <g transform="translate(360,320)">
+    <rect class="table" x="0" y="0" width="360" height="110" rx="6"/>
+    <text class="title" x="10" y="20">sales</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">sale_date, customer_id FK -> customers.id</text>
+    <text class="col" x="12" y="72">total, payment_method, note</text>
+  </g>
+
+  <!-- sale_items -->
+  <g transform="translate(30,470)">
+    <rect class="table" x="0" y="0" width="420" height="110" rx="6"/>
+    <text class="title" x="10" y="20">sale_items</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">sale_id FK -> sales.id</text>
+    <text class="col" x="12" y="72">product_id FK -> products.id</text>
+    <text class="col" x="12" y="88">quantity, unit_price, subtotal</text>
+  </g>
+
+  <!-- stock_movements -->
+  <g transform="translate(480,320)">
+    <rect class="table" x="0" y="0" width="300" height="110" rx="6"/>
+    <text class="title" x="10" y="20">stock_movements</text>
+    <text class="col" x="12" y="40">id PK</text>
+    <text class="col" x="12" y="56">product_id FK -> products.id</text>
+    <text class="col" x="12" y="72">movement_type(IN/OUT), qty, reference</text>
+  </g>
+
+  <!-- Relaciones (líneas con flecha hacia la PK referenciada) -->
+  <!-- products.category_id -> categories.id -->
+  <line class="line" x1="210" y1="170" x2="60" y2="40" />
+  <!-- products.supplier_id -> suppliers.id -->
+  <line class="line" x1="360" y1="170" x2="360" y2="100" />
+  <!-- inventories.product_id -> products.id -->
+  <line class="line" x1="480" y1="200" x2="420" y2="220" />
+  <!-- sales.customer_id -> customers.id -->
+  <line class="line" x1="420" y1="360" x2="300" y2="370" />
+  <!-- sale_items.sale_id -> sales.id -->
+  <line class="line" x1="200" y1="470" x2="420" y2="360" />
+  <!-- sale_items.product_id -> products.id -->
+  <line class="line" x1="240" y1="540" x2="180" y2="220" />
+  <!-- stock_movements.product_id -> products.id -->
+  <line class="line" x1="560" y1="360" x2="240" y2="220" />
+
+  <!-- Pie -->
+  <text x="30" y="680" font-size="12" fill="#555">Diagrama ER simplificado - Entidades principales y relaciones. Archivo: diagram/ER_diagram.svg</text>
+</svg>
