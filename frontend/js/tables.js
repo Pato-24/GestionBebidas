@@ -16,7 +16,7 @@ const Tables = {
             }
             
             let html = `
-                <table>
+                <table id="table-productos">
                     <thead>
                         <tr>
                             <th>SKU</th>
@@ -34,7 +34,7 @@ const Tables = {
             
             productos.forEach(producto => {
                 html += `
-                    <tr>
+                    <tr data-category-id="${producto.category_id}">
                         <td><strong>${producto.sku}</strong></td>
                         <td>${producto.name}</td>
                         <td>${producto.category_name || '-'}</td>

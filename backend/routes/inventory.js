@@ -44,21 +44,15 @@ router.put('/:productId', async (req, res) => {
     const { productId } = req.params;
     const { quantity, min_stock } = req.body;
     
+    // Upsert: crea el registro si no existe, o actualiza si existe
     const query = `
-      UPDATE inventories 
-      SET quantity = ?, min_stock = ?
-      WHERE product_id = ?
+      INSERT INTO inventories (product_id, quantity, min_stock)
+      VALUES (?, ?, ?)
+      ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), min_stock = VALUES(min_stock)
     `;
-    
-    const [result] = await promisePool.query(query, [quantity, min_stock, productId]);
-    
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        error: true,
-        message: 'Producto no encontrado en inventario'
-      });
-    }
-    
+
+    await promisePool.query(query, [productId, quantity, min_stock]);
+
     res.json({
       success: true,
       message: 'Inventario actualizado exitosamente'

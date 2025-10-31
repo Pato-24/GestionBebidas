@@ -184,7 +184,13 @@ function setupEventListeners() {
     // Buscador de productos
     const searchProductos = document.getElementById('search-productos');
     if (searchProductos) {
-        searchProductos.addEventListener('input', filtrarProductos);
+        searchProductos.addEventListener('input', Utils.debounce(filtrarProductos, 200));
+    }
+
+    // Filtro por categoría de productos
+    const filterCategoria = document.getElementById('filter-categoria');
+    if (filterCategoria) {
+        filterCategoria.addEventListener('change', filtrarProductos);
     }
 }
 
@@ -419,7 +425,7 @@ async function abrirModalNuevoProducto() {
         select.innerHTML = '<option value="">Seleccione una categoría</option>';
         
         response.data.forEach(cat => {
-            select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
         });
         
         // Limpiar formulario
@@ -435,19 +441,38 @@ async function submitNuevoProducto(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
+    const stockInicial = parseInt(formData.get('stock')) || 0;
+    const minStock = parseInt(formData.get('stock_minimo')) || 0;
+
+    // Mapeo al contrato del backend
     const data = {
-        nombre: formData.get('nombre'),
-        categoria_id: parseInt(formData.get('categoria_id')),
-        precio: parseFloat(formData.get('precio')),
-        stock: parseInt(formData.get('stock')),
-        stock_minimo: parseInt(formData.get('stock_minimo')),
-        descripcion: formData.get('descripcion') || null
+        sku: formData.get('sku'),
+        name: formData.get('nombre'),
+        category_id: parseInt(formData.get('categoria_id')),
+        unit_price: parseFloat(formData.get('precio')),
+        volume_ml: formData.get('volumen_ml') ? parseInt(formData.get('volumen_ml')) : null,
+        unit_measure: formData.get('unidad_medida') || 'unidad'
+        // supplier_id opcional: podría agregarse si se incorpora al formulario
     };
     
     try {
-        await API.createProducto(data);
+        const resp = await API.createProducto(data);
+        const nuevoId = resp?.data?.id;
         Utils.showNotification('Producto creado exitosamente', 'success');
         cerrarModal('modal-nuevo-producto');
+        
+        // Intentar inicializar inventario si el usuario cargó valores
+        if (nuevoId && (stockInicial > 0 || minStock > 0)) {
+            try {
+                await API.updateInventario(nuevoId, {
+                    quantity: stockInicial,
+                    min_stock: minStock
+                });
+            } catch (invErr) {
+                console.warn('No se pudo inicializar el inventario para el nuevo producto:', invErr);
+                // No bloqueamos el flujo: el producto igualmente quedó creado
+            }
+        }
         await Tables.renderProductos();
         await loadKPIs();
     } catch (error) {
@@ -457,17 +482,19 @@ async function submitNuevoProducto(e) {
 }
 
 // Filtrar productos por búsqueda
-function filtrarProductos(e) {
-    const searchTerm = e.target.value.toLowerCase();
+function filtrarProductos() {
+    const searchInput = document.getElementById('search-productos');
+    const filterSelect = document.getElementById('filter-categoria');
+    const term = (searchInput?.value || '').toLowerCase();
+    const categoria = filterSelect?.value || '';
+
     const rows = document.querySelectorAll('#table-productos tbody tr');
-    
     rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
+        const texto = row.textContent.toLowerCase();
+        const catId = row.dataset.categoryId || '';
+        const coincideTexto = !term || texto.includes(term);
+        const coincideCategoria = !categoria || catId === String(categoria);
+        row.style.display = (coincideTexto && coincideCategoria) ? '' : 'none';
     });
 }
 
