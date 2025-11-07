@@ -84,15 +84,68 @@ const Utils = {
     
     // Mostrar notificación
     showNotification(message, type = 'info') {
-        // Implementación simple con alert (puede mejorarse con una librería de notificaciones)
-        const icon = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        }[type] || 'ℹ️';
+        // Crear contenedor de notificación modal
+        const modal = document.createElement('div');
+        modal.className = 'notification-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
         
-        alert(`${icon} ${message}`);
+        const icons = {
+            success: '<i class="fas fa-check-circle"></i>',
+            error: '<i class="fas fa-times-circle"></i>',
+            warning: '<i class="fas fa-exclamation-triangle"></i>',
+            info: '<i class="fas fa-info-circle"></i>'
+        };
+        
+        const titles = {
+            success: '¡Éxito!',
+            error: 'Error',
+            warning: 'Advertencia',
+            info: 'Información'
+        };
+        
+        modal.innerHTML = `
+            <div class="notification-modal-overlay"></div>
+            <div class="notification-modal-content ${type}">
+                <div class="notification-modal-icon">
+                    ${icons[type] || icons.info}
+                </div>
+                <div class="notification-modal-body">
+                    <h3 class="notification-modal-title">${titles[type] || titles.info}</h3>
+                    <p class="notification-modal-message">${message}</p>
+                </div>
+                <button class="notification-modal-close" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Animación de entrada
+        setTimeout(() => {
+            modal.classList.add('show');
+        }, 10);
+        
+        // Función para cerrar el modal
+        const closeModal = () => {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(modal);
+            }, 300);
+        };
+        
+        // Cerrar al hacer clic en el botón de cerrar
+        const closeBtn = modal.querySelector('.notification-modal-close');
+        closeBtn.addEventListener('click', closeModal);
+        
+        // Cerrar al hacer clic en el overlay
+        const overlay = modal.querySelector('.notification-modal-overlay');
+        overlay.addEventListener('click', closeModal);
+        
+        // Auto-cerrar después de 4 segundos para success, 6 segundos para otros
+        const autoCloseTime = type === 'success' ? 4000 : 6000;
+        setTimeout(closeModal, autoCloseTime);
     },
     
     // Debounce para búsquedas

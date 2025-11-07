@@ -7,6 +7,7 @@ require('dotenv').config();
 const { testConnection } = require('./config/database');
 
 // Importar rutas
+const authRoutes = require('./routes/auth');
 const statsRoutes = require('./routes/stats');
 const productsRoutes = require('./routes/products');
 const salesRoutes = require('./routes/sales');
@@ -30,8 +31,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Ruta de prueba
-app.get('/', (req, res) => {
+// Ruta de información de la API
+app.get('/api', (req, res) => {
   res.json({
     message: 'API Gestión de Bebidas - Trabajo Práctico Integrador',
     version: '1.0.0',
@@ -46,11 +47,17 @@ app.get('/', (req, res) => {
 });
 
 // Registrar rutas de la API
+app.use('/api/auth', authRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/categories', categoriesRoutes);
 app.use('/api/inventory', inventoryRoutes);
+
+// Servir el frontend en la ruta raíz (debe ir después de las rutas de la API)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
 
 // Middleware de manejo de errores
 app.use((err, req, res, next) => {

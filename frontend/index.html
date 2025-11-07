@@ -6,11 +6,20 @@
     <title>Sistema de Gestión de Bebidas - Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Verificar autenticación antes de cargar la página
+        if (localStorage.getItem('isAuthenticated') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
 </head>
 <body>
+    <!-- Overlay para cerrar sidebar en móvil -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+    
     <div class="container">
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo">
                 <i class="fas fa-wine-bottle"></i>
                 <h2>Gestión Bebidas</h2>
@@ -50,21 +59,40 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-left">
-                    <h1 id="page-title">Dashboard</h1>
-                    <p class="breadcrumb" id="breadcrumb">Inicio / Dashboard</p>
+                    <button class="btn-menu-mobile" id="btn-menu-mobile" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 id="page-title">Dashboard</h1>
+                        <p class="breadcrumb" id="breadcrumb">Inicio / Dashboard</p>
+                    </div>
                 </div>
                 <div class="header-right">
                     <div class="search-box">
                         <i class="fas fa-search"></i>
                         <input type="text" placeholder="Buscar..." id="global-search">
                     </div>
-                    <button class="btn-icon" title="Notificaciones">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
-                    <div class="user-info">
-                        <span>Usuario</span>
+                    <div class="notifications-container">
+                        <button class="btn-icon" id="btn-notificaciones" title="Notificaciones">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="badge-notificaciones">3</span>
+                        </button>
+                        <div class="notifications-panel" id="notifications-panel">
+                            <div class="notifications-header">
+                                <h3>Notificaciones</h3>
+                                <button class="btn-text" onclick="marcarTodasLeidas()">Marcar todas como leídas</button>
+                            </div>
+                            <div class="notifications-list" id="notifications-list">
+                                <!-- Las notificaciones se cargarán dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-info" id="user-info">
+                        <span id="user-name">Usuario</span>
                         <i class="fas fa-user-circle"></i>
+                        <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
                     </div>
                 </div>
             </header>
@@ -226,6 +254,7 @@
                 <section id="section-ventas" class="content-section">
                     <div class="section-toolbar">
                         <div class="toolbar-left">
+                            <input type="text" class="search-input" placeholder="Buscar venta..." id="search-ventas">
                             <input type="date" class="date-input" id="filter-fecha-desde">
                             <input type="date" class="date-input" id="filter-fecha-hasta">
                             <select class="filter-select" id="filter-metodo-pago">
@@ -265,7 +294,7 @@
                             </select>
                         </div>
                         <div class="toolbar-right">
-                            <button class="btn btn-secondary" id="btn-exportar-inventario">
+                            <button class="btn btn-secondary" id="btn-exportar-inventario" onclick="exportarInventarioExcel()">
                                 <i class="fas fa-download"></i> Exportar
                             </button>
                         </div>
@@ -289,7 +318,7 @@
                             </div>
                             <h3>Reporte de Ventas</h3>
                             <p>Generar reporte detallado de ventas por período</p>
-                            <button class="btn btn-outline">
+                            <button class="btn btn-outline" onclick="generarReporteVentas()">
                                 <i class="fas fa-download"></i> Descargar PDF
                             </button>
                         </div>
@@ -300,7 +329,7 @@
                             </div>
                             <h3>Inventario Completo</h3>
                             <p>Exportar listado completo de stock actual</p>
-                            <button class="btn btn-outline">
+                            <button class="btn btn-outline" onclick="exportarInventarioExcel()">
                                 <i class="fas fa-download"></i> Descargar Excel
                             </button>
                         </div>
@@ -311,7 +340,7 @@
                             </div>
                             <h3>Análisis Estadístico</h3>
                             <p>Visualizar tendencias y patrones de venta</p>
-                            <button class="btn btn-outline">
+                            <button class="btn btn-outline" onclick="abrirModalAnalisisEstadistico()">
                                 <i class="fas fa-eye"></i> Ver Análisis
                             </button>
                         </div>
@@ -322,7 +351,7 @@
                             </div>
                             <h3>Top Clientes</h3>
                             <p>Ranking de clientes por volumen de compra</p>
-                            <button class="btn btn-outline">
+                            <button class="btn btn-outline" onclick="generarReporteClientes()">
                                 <i class="fas fa-download"></i> Generar
                             </button>
                         </div>
@@ -432,73 +461,461 @@
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- Modal Nuevo Producto -->
-        <div class="modal" id="modal-nuevo-producto">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2><i class="fas fa-box"></i> Nuevo Producto</h2>
-                    <button class="modal-close" onclick="cerrarModal('modal-nuevo-producto')">&times;</button>
+    <!-- Modales -->
+    <!-- Modal Nuevo Producto -->
+    <div class="modal" id="modal-nuevo-producto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-box"></i> Nuevo Producto</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-nuevo-producto')">&times;</button>
+            </div>
+            <form id="form-nuevo-producto">
+                <div class="form-group">
+                    <label>SKU *</label>
+                    <input type="text" name="sku" required>
                 </div>
-                <form id="form-nuevo-producto">
-                    <div class="form-group">
-                        <label>SKU *</label>
-                        <input type="text" name="sku" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre del Producto *</label>
-                        <input type="text" name="nombre" required>
+                <div class="form-group">
+                    <label>Nombre del Producto *</label>
+                    <input type="text" name="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Categoría *</label>
+                    <select name="categoria_id" id="select-categoria-producto" required>
+                        <option value="">Seleccione una categoría</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Volumen (ml)</label>
+                    <input type="number" name="volumen_ml" min="0" placeholder="Ej: 500">
+                </div>
+                
+                <div class="form-group">
+                    <label>Unidad de medida</label>
+                    <select name="unidad_medida">
+                        <option value="unidad">Unidad</option>
+                        <option value="ml">Mililitros (ml)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Precio *</label>
+                    <input type="number" name="precio" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Stock Inicial *</label>
+                    <input type="number" name="stock" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Stock Mínimo *</label>
+                    <input type="number" name="stock_minimo" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" rows="3"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-nuevo-producto')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Producto -->
+    <div class="modal" id="modal-editar-producto">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-edit"></i> Editar Producto</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-editar-producto')">&times;</button>
+            </div>
+            <form id="form-editar-producto">
+                <input type="hidden" name="id" id="edit-producto-id">
+                
+                <div class="form-group">
+                    <label>SKU *</label>
+                    <input type="text" name="sku" id="edit-sku" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre del Producto *</label>
+                    <input type="text" name="nombre" id="edit-nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Categoría *</label>
+                    <select name="categoria_id" id="edit-categoria-producto" required>
+                        <option value="">Seleccione una categoría</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Volumen (ml)</label>
+                    <input type="number" name="volumen_ml" id="edit-volumen" min="0" placeholder="Ej: 500">
+                </div>
+                
+                <div class="form-group">
+                    <label>Unidad de medida</label>
+                    <select name="unidad_medida" id="edit-unidad-medida">
+                        <option value="unidad">Unidad</option>
+                        <option value="ml">Mililitros (ml)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Precio *</label>
+                    <input type="number" name="precio" id="edit-precio" step="0.01" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" id="edit-descripcion" rows="3"></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-editar-producto')">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Actualizar Producto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Detalle de Venta -->
+    <div class="modal" id="modal-detalle-venta">
+        <div class="modal-content modal-detalle-venta-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-receipt"></i> Detalle de Venta #<span id="detalle-venta-id"></span></h2>
+                <button class="modal-close" onclick="cerrarModal('modal-detalle-venta')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detalle-venta-info">
+                    <div class="info-row">
+                        <div class="info-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div>
+                                <label>Fecha y Hora</label>
+                                <span id="detalle-venta-fecha"></span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-credit-card"></i>
+                            <div>
+                                <label>Método de Pago</label>
+                                <span id="detalle-venta-metodo"></span>
+                            </div>
+                        </div>
                     </div>
                     
+                    <div class="info-row" id="detalle-venta-nota-container" style="display: none;">
+                        <div class="info-item full-width">
+                            <i class="fas fa-sticky-note"></i>
+                            <div>
+                                <label>Nota</label>
+                                <span id="detalle-venta-nota"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detalle-venta-productos">
+                    <h3><i class="fas fa-box"></i> Productos</h3>
+                    <table class="detalle-productos-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Precio Unit.</th>
+                                <th class="text-right">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalle-venta-items">
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="detalle-venta-total">
+                    <div class="total-row">
+                        <span>Total</span>
+                        <span class="total-amount" id="detalle-venta-total">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-detalle-venta')">
+                        <i class="fas fa-times"></i> Cerrar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="imprimirDetalle()">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Cierre de Sesión -->
+    <div class="modal" id="modal-confirmar-logout">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-confirmar-logout')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <p class="confirm-message">¿Estás seguro que deseas cerrar sesión?</p>
+                <p class="confirm-submessage">Se perderán los cambios no guardados.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-confirmar-logout')">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmarCerrarSesion()">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Análisis Estadístico -->
+    <div class="modal" id="modal-analisis-estadistico">
+        <div class="modal-content modal-analisis">
+            <div class="modal-header">
+                <h2><i class="fas fa-chart-line"></i> Análisis Estadístico Detallado</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-analisis-estadistico')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="analisis-grid">
+                    <div class="analisis-card">
+                        <h4><i class="fas fa-trending-up"></i> Tendencia de Ventas</h4>
+                        <canvas id="chart-tendencia-ventas"></canvas>
+                        <div class="analisis-stats" id="stats-tendencia"></div>
+                    </div>
+                    
+                    <div class="analisis-card">
+                        <h4><i class="fas fa-box"></i> Rotación de Inventario</h4>
+                        <canvas id="chart-rotacion-inventario"></canvas>
+                        <div class="analisis-stats" id="stats-rotacion"></div>
+                    </div>
+                    
+                    <div class="analisis-card full-width">
+                        <h4><i class="fas fa-calendar-alt"></i> Ventas por Día de la Semana</h4>
+                        <canvas id="chart-ventas-dia-semana"></canvas>
+                        <div class="analisis-stats" id="stats-dias"></div>
+                    </div>
+                    
+                    <div class="analisis-card full-width">
+                        <h4><i class="fas fa-clock"></i> Horas Pico de Ventas</h4>
+                        <canvas id="chart-horas-pico"></canvas>
+                        <div class="analisis-stats" id="stats-horas"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-analisis-estadistico')">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="exportarAnalisis()">
+                    <i class="fas fa-download"></i> Exportar Análisis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ajustar Stock -->
+    <div class="modal" id="modal-ajustar-stock">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-boxes"></i> Ajustar Inventario</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-ajustar-stock')">&times;</button>
+            </div>
+            <form id="form-ajustar-stock">
+                <input type="hidden" id="stock-producto-id">
+                
+                <div class="stock-producto-info">
+                    <div class="info-badge">
+                        <i class="fas fa-box"></i>
+                        <div>
+                            <span class="info-label">Producto</span>
+                            <span class="info-value" id="stock-producto-nombre">-</span>
+                        </div>
+                    </div>
+                    <div class="info-badge">
+                        <i class="fas fa-barcode"></i>
+                        <div>
+                            <span class="info-label">SKU</span>
+                            <span class="info-value" id="stock-producto-sku">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stock-adjustment-grid">
+                    <div class="stock-card current">
+                        <div class="stock-card-header">
+                            <i class="fas fa-warehouse"></i>
+                            <span>Stock Actual</span>
+                        </div>
+                        <div class="stock-card-value" id="stock-actual-display">0</div>
+                        <div class="stock-card-label">unidades en inventario</div>
+                    </div>
+
+                    <div class="stock-card minimum">
+                        <div class="stock-card-header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Stock Mínimo Actual</span>
+                        </div>
+                        <div class="stock-card-value" id="stock-minimo-display">0</div>
+                        <div class="stock-card-label">nivel de alerta</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="fas fa-edit"></i> Nuevos Valores</h4>
+                    
                     <div class="form-group">
-                        <label>Categoría *</label>
-                        <select name="categoria_id" id="select-categoria-producto" required>
-                            <option value="">Seleccione una categoría</option>
+                        <label for="nuevo-stock">Nuevo Stock <span class="required">*</span></label>
+                        <div class="input-with-buttons">
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock', -10)">
+                                <i class="fas fa-minus-circle"></i> 10
+                            </button>
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="nuevo-stock" name="nuevo_stock" min="0" required class="input-large">
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock', 10)">
+                                <i class="fas fa-plus-circle"></i> 10
+                            </button>
+                        </div>
+                        <small class="form-hint">Use los botones o escriba la cantidad directamente</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nuevo-stock-minimo">Nuevo Stock Mínimo <span class="required">*</span></label>
+                        <div class="input-with-buttons">
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock-minimo', -5)">
+                                <i class="fas fa-minus-circle"></i> 5
+                            </button>
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock-minimo', -1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" id="nuevo-stock-minimo" name="nuevo_stock_minimo" min="0" required class="input-large">
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock-minimo', 1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button type="button" class="btn-adjust" onclick="ajustarCantidad('nuevo-stock-minimo', 5)">
+                                <i class="fas fa-plus-circle"></i> 5
+                            </button>
+                        </div>
+                        <small class="form-hint">Nivel mínimo antes de recibir alertas</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="motivo-ajuste">Motivo del Ajuste</label>
+                        <select id="motivo-ajuste" name="motivo">
+                            <option value="restock">Reabastecimiento</option>
+                            <option value="ajuste">Ajuste de inventario</option>
+                            <option value="correccion">Corrección de error</option>
+                            <option value="merma">Merma o pérdida</option>
+                            <option value="devolucion">Devolución</option>
+                            <option value="otro">Otro</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
-                        <label>Volumen (ml)</label>
-                        <input type="number" name="volumen_ml" min="0" placeholder="Ej: 500">
+                        <label for="nota-ajuste">Nota (Opcional)</label>
+                        <textarea id="nota-ajuste" name="nota" rows="2" placeholder="Agregue detalles sobre el ajuste..."></textarea>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Unidad de medida</label>
-                        <select name="unidad_medida">
-                            <option value="unidad">Unidad</option>
-                            <option value="ml">Mililitros (ml)</option>
-                        </select>
+                </div>
+
+                <div class="stock-preview" id="stock-preview">
+                    <div class="preview-item">
+                        <span class="preview-label">Diferencia:</span>
+                        <span class="preview-value" id="stock-diferencia">0</span>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Precio *</label>
-                        <input type="number" name="precio" step="0.01" min="0" required>
+                    <div class="preview-item">
+                        <span class="preview-label">Estado:</span>
+                        <span class="preview-badge" id="stock-estado-badge">Normal</span>
                     </div>
-                    
-                    <div class="form-group">
-                        <label>Stock Inicial *</label>
-                        <input type="number" name="stock" min="0" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Stock Mínimo *</label>
-                        <input type="number" name="stock_minimo" min="0" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea name="descripcion" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="modal-actions">
-                        <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-nuevo-producto')">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Guardar Producto
-                        </button>
-                    </div>
-                </form>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-ajustar-stock')">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Ajuste
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación de Producto -->
+    <div class="modal" id="modal-confirmar-eliminar-producto">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h2><i class="fas fa-trash-alt"></i> Eliminar Producto</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-confirmar-eliminar-producto')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p class="confirm-message">¿Estás seguro que deseas eliminar este producto?</p>
+                <p class="confirm-submessage">Esta acción no se puede deshacer. El producto será eliminado permanentemente del sistema.</p>
+                <div class="confirm-details" id="producto-eliminar-info"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-confirmar-eliminar-producto')">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmarEliminarProducto()">
+                    <i class="fas fa-trash-alt"></i> Eliminar Producto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmar Eliminación de Venta -->
+    <div class="modal" id="modal-confirmar-eliminar-venta">
+        <div class="modal-content modal-confirm">
+            <div class="modal-header">
+                <h2><i class="fas fa-trash-alt"></i> Eliminar Venta</h2>
+                <button class="modal-close" onclick="cerrarModal('modal-confirmar-eliminar-venta')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <p class="confirm-message">¿Estás seguro que deseas eliminar esta venta?</p>
+                <p class="confirm-submessage">Esta acción no se puede deshacer. La venta será eliminada permanentemente del sistema.</p>
+                <div class="confirm-details" id="venta-eliminar-info"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-confirmar-eliminar-venta')">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmarEliminarVenta()">
+                    <i class="fas fa-trash-alt"></i> Eliminar Venta
+                </button>
             </div>
         </div>
     </div>
@@ -509,6 +926,7 @@
     <script src="js/api.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/tables.js"></script>
+    <script src="js/reportes.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

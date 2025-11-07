@@ -179,7 +179,7 @@ const Tables = {
                         <td><span class="badge-status ${estadoClass}">${item.estado_stock}</span></td>
                         <td>${Utils.formatDateShort(item.last_updated)}</td>
                         <td>
-                            <button class="btn btn-sm btn-primary" onclick="ajustarStock(${item.id}, ${item.stock}, ${item.min_stock})" title="Ajustar stock">
+                            <button class="btn btn-sm btn-primary" onclick="ajustarStock(${item.id}, ${item.stock}, ${item.min_stock}, '${item.producto.replace(/'/g, "\\'")}', '${item.sku}')" title="Ajustar stock">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
