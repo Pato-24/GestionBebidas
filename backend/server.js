@@ -1,6 +1,7 @@
 // Servidor principal - Backend API para Gestión de Bebidas
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const { testConnection } = require('./config/database');
@@ -19,6 +20,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors()); // Permitir peticiones desde el frontend
 app.use(express.json()); // Parsear JSON en el body
 app.use(express.urlencoded({ extended: true }));
+
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Middleware de logging simple
 app.use((req, res, next) => {
