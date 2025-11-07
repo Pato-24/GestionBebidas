@@ -1115,15 +1115,14 @@ function aplicarPermisos() {
         // Ocultar botones de administrador
         ocultarElementoPorId('btn-nuevo-producto');
         
-        // Ocultar acciones de eliminar y editar en tablas
+        // Ocultar acciones de eliminar y editar en tablas para empleados
         const estiloEmpleado = document.createElement('style');
         estiloEmpleado.innerHTML = `
-            /* Ocultar botones de eliminar y editar para empleados */
-            .btn-danger, 
-            button[onclick*="eliminarProducto"],
-            button[onclick*="editarProducto"],
-            button[onclick*="eliminarVenta"],
-            button[onclick*="ajustarStock"] {
+            /* Ocultar botones de eliminar y editar SOLO en tablas para empleados */
+            #tabla-productos button[onclick*="eliminarProducto"],
+            #tabla-productos button[onclick*="editarProducto"],
+            #tabla-ventas button[onclick*="eliminarVenta"],
+            #tabla-inventario button[onclick*="ajustarStock"] {
                 display: none !important;
             }
             
