@@ -22,14 +22,14 @@ app.use(cors()); // Permitir peticiones desde el frontend
 app.use(express.json()); // Parsear JSON en el body
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos del frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
-
-// Middleware de logging simple
+// Middleware de logging simple (ANTES de servir archivos estáticos)
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Ruta de información de la API
 app.get('/api', (req, res) => {
